@@ -213,7 +213,12 @@
   <script src="mpegts.js"></script>
 
 
-  <script>
+  <script type="module">
+    import { DiscordSDK } from "https://cdn.jsdelivr.net/npm/@discord/embedded-app-sdk/+esm";
+
+    const DISCORD_CLIENT_ID = "1550162030437339256";
+    const discordSdk = new DiscordSDK(DISCORD_CLIENT_ID);
+
     const video = document.getElementById("video");
 
     const loading = document.getElementById("loading");
@@ -260,6 +265,58 @@
 
     let currentPlayer = null;
 
+    // Yayın başladıktan sonra kısa takılmalarda loading ekranı
+    // anında görünmesin. 2 saniye sürerse göster.
+    let loadingDelayTimer = null;
+    let hasStartedPlayback = false;
+
+    const LOADING_DELAY_MS = 2000;
+
+
+    // =====================================================
+    // LOADING KONTROLÜ
+    // =====================================================
+
+    function clearLoadingDelay() {
+      if (loadingDelayTimer !== null) {
+        clearTimeout(loadingDelayTimer);
+        loadingDelayTimer = null;
+      }
+    }
+
+
+    function showLoadingNow() {
+      clearLoadingDelay();
+      loading.style.display = "flex";
+    }
+
+
+    function hideLoading() {
+      clearLoadingDelay();
+      hideLoading();
+    }
+
+
+    function scheduleLoading() {
+      clearLoadingDelay();
+
+      if (!hasStartedPlayback) {
+        loading.style.display = "flex";
+        return;
+      }
+
+      loadingDelayTimer = setTimeout(() => {
+        if (
+          video.paused === false &&
+          video.readyState < HTMLMediaElement.HAVE_FUTURE_DATA
+        ) {
+          loading.style.display = "flex";
+        }
+
+        loadingDelayTimer = null;
+      }, LOADING_DELAY_MS);
+    }
+
 
     // =====================================================
     // HATA
@@ -282,6 +339,9 @@
     // =====================================================
 
     function destroyPlayer() {
+
+      clearLoadingDelay();
+      hasStartedPlayback = false;
 
       if (!currentPlayer) {
         return;
@@ -314,6 +374,8 @@
 
       loadingText.textContent =
         `${channel.name} yükleniyor...`;
+
+      showLoadingNow();
 
       if (video.canPlayType(
         "application/vnd.apple.mpegurl"
@@ -405,6 +467,8 @@
 
       loadingText.textContent =
         `${channel.name} yükleniyor...`;
+
+      showLoadingNow();
 
 
       if (
@@ -542,15 +606,27 @@
 
 
     // =====================================================
-    // VIDEO HAZIR OLUNCA LOADING KAPAT
+    // VIDEO DURUMU
     // =====================================================
 
     video.addEventListener(
       "playing",
       () => {
 
-        loading.style.display =
-          "none";
+        hasStartedPlayback = true;
+        hideLoading();
+
+      }
+    );
+
+
+    video.addEventListener(
+      "canplay",
+      () => {
+
+        if (hasStartedPlayback) {
+          hideLoading();
+        }
 
       }
     );
@@ -560,8 +636,17 @@
       "waiting",
       () => {
 
-        loading.style.display =
-          "flex";
+        scheduleLoading();
+
+      }
+    );
+
+
+    video.addEventListener(
+      "stalled",
+      () => {
+
+        scheduleLoading();
 
       }
     );
@@ -588,18 +673,20 @@
 
       try {
 
-        const params =
-          new URLSearchParams(
-            window.location.search
-          );
+        loadingText.textContent =
+          "Discord bağlantısı kuruluyor...";
+
+
+        // Discord Activity SDK hazır olsun.
+        await discordSdk.ready();
 
 
         const guildId =
-          params.get("guild_id");
+          discordSdk.guildId;
 
 
         const voiceChannelId =
-          params.get("channel_id");
+          discordSdk.channelId;
 
 
         console.log(
@@ -627,13 +714,141 @@
         }
 
 
+        // =====================================================
+        // DISCORD KULLANICISINI DOĞRULA
+        // =====================================================
+
+        loadingText.textContent =
+          "Discord hesabın doğrulanıyor...";
+
+
+        const { code } =
+          await discordSdk.commands.authorize({
+
+            client_id:
+              DISCORD_CLIENT_ID,
+
+            response_type:
+              "code",
+
+            state:
+              "",
+
+            prompt:
+              "none",
+
+            scope: [
+              "identify"
+            ]
+
+          });
+
+
+        // Worker bu code'u Discord access_token'a çevirecek.
+        const tokenResponse =
+          await fetch(
+            "/api/token",
+            {
+              method: "POST",
+
+              headers: {
+                "Content-Type":
+                  "application/json"
+              },
+
+              body:
+                JSON.stringify({
+                  code: code
+                }),
+
+              cache:
+                "no-store"
+            }
+          );
+
+
+        const tokenText =
+          await tokenResponse.text();
+
+
+        let tokenData;
+
+
+        try {
+
+          tokenData =
+            JSON.parse(tokenText);
+
+        } catch {
+
+          throw new Error(
+            `Token servisi geçersiz cevap verdi: ${tokenText.slice(0, 300)}`
+          );
+
+        }
+
+
+        if (!tokenResponse.ok) {
+
+          throw new Error(
+            tokenData.error ||
+            `Token servisi hatası: ${tokenResponse.status}`
+          );
+
+        }
+
+
+        if (!tokenData.access_token) {
+
+          throw new Error(
+            "Discord access token alınamadı."
+          );
+
+        }
+
+
+        const auth =
+          await discordSdk.commands.authenticate({
+            access_token:
+              tokenData.access_token
+          });
+
+
+        if (
+          !auth ||
+          !auth.user ||
+          !auth.user.id
+        ) {
+
+          throw new Error(
+            "Discord kullanıcı bilgisi alınamadı."
+          );
+
+        }
+
+
+        const userId =
+          auth.user.id;
+
+
+        console.log(
+          "Discord User ID:",
+          userId
+        );
+
+
+        // =====================================================
+        // KULLANICIYA AİT KANAL SEÇİMİNİ AL
+        // =====================================================
+
         loadingText.textContent =
           "Seçilen kanal bulunuyor...";
 
 
         const apiUrl =
           `/api/selection` +
-          `?guild_id=${encodeURIComponent(guildId)}` +
+          `?user_id=${encodeURIComponent(userId)}` +
+          `&guild_id=${encodeURIComponent(guildId)}` +
           `&voice_channel_id=${encodeURIComponent(voiceChannelId)}`;
 
 
@@ -653,7 +868,7 @@
           );
 
 
-        const text =
+        const responseText =
           await response.text();
 
 
@@ -663,12 +878,12 @@
         try {
 
           data =
-            JSON.parse(text);
+            JSON.parse(responseText);
 
         } catch {
 
           throw new Error(
-            `Worker geçersiz cevap verdi: ${text.slice(0, 300)}`
+            `Worker geçersiz cevap verdi: ${responseText.slice(0, 300)}`
           );
 
         }
