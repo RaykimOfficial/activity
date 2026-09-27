@@ -529,16 +529,65 @@
       player.load();
 
 
-      player.play().catch(
-        (error) => {
+      // Son çare: akış veri üretmeye başladıysa birkaç kez kontrol edip
+      // loading ekranını kaldır. Sürekli polling değil; sadece açılışta kısa kontrol.
+      let startupChecks = 0;
 
-          console.warn(
-            "Otomatik oynatma:",
-            error
-          );
+      const startupCheckTimer = setInterval(() => {
+
+        startupChecks += 1;
+
+        if (
+          video.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA ||
+          video.currentTime > 0
+        ) {
+
+          hideLoading();
+          clearInterval(startupCheckTimer);
+
+        } else if (startupChecks >= 20) {
+
+          clearInterval(startupCheckTimer);
 
         }
-      );
+
+      }, 250);
+
+
+      player.play()
+        .then(() => {
+
+          // MPEG-TS yayını gerçekten başlamışsa loading ekranını kapat.
+          markPlaybackStarted();
+
+        })
+        .catch(
+          (error) => {
+
+            console.warn(
+              "Otomatik oynatma:",
+              error
+            );
+
+          }
+        );
+
+
+      // Bazı MPEG-TS akışlarında standart video eventleri
+      // güvenilir şekilde gelmeyebiliyor. Medya bilgisi geldiğinde
+      // oynatıcı veri almaya başlamış demektir; loading'i kapat.
+      if (mpegts.Events.MEDIA_INFO) {
+
+        player.on(
+          mpegts.Events.MEDIA_INFO,
+          () => {
+
+            hideLoading();
+
+          }
+        );
+
+      }
 
 
       player.on(
