@@ -272,6 +272,15 @@
 
     const LOADING_DELAY_MS = 2000;
 
+    // Kullanıcı bazlı seçim takibi
+    let currentChannelKey = null;
+    let currentUserId = null;
+    let currentGuildId = null;
+    let currentVoiceChannelId = null;
+
+    // Discord access token'ı tekrar tekrar izin istememesi için sakla.
+    const DISCORD_TOKEN_STORAGE_KEY = "firikik_discord_access_token";
+
 
     // =====================================================
     // LOADING KONTROLÜ
@@ -568,6 +577,13 @@
       }
 
 
+      if (currentChannelKey === channelKey) {
+        return;
+      }
+
+
+      currentChannelKey = channelKey;
+
       destroyPlayer();
 
 
@@ -609,25 +625,47 @@
     // VIDEO DURUMU
     // =====================================================
 
+    function markPlaybackStarted() {
+      hasStartedPlayback = true;
+      hideLoading();
+    }
+
+
     video.addEventListener(
       "playing",
-      () => {
-
-        hasStartedPlayback = true;
-        hideLoading();
-
-      }
+      markPlaybackStarted
     );
 
 
     video.addEventListener(
       "canplay",
       () => {
+        if (!video.paused || video.currentTime > 0) {
+          markPlaybackStarted();
+        }
+      }
+    );
 
-        if (hasStartedPlayback) {
+
+    video.addEventListener(
+      "loadeddata",
+      () => {
+        // MPEG-TS bazen "playing" eventini geç/kararsız gönderebiliyor.
+        // Gerçek medya verisi geldiyse loading'i kaldır.
+        if (video.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA) {
           hideLoading();
         }
+      }
+    );
 
+
+    video.addEventListener(
+      "timeupdate",
+      () => {
+        // Ses/video gerçekten ilerliyorsa yayın başlamıştır.
+        if (video.currentTime > 0) {
+          markPlaybackStarted();
+        }
       }
     );
 
@@ -635,9 +673,7 @@
     video.addEventListener(
       "waiting",
       () => {
-
         scheduleLoading();
-
       }
     );
 
@@ -645,9 +681,7 @@
     video.addEventListener(
       "stalled",
       () => {
-
         scheduleLoading();
-
       }
     );
 
@@ -655,12 +689,10 @@
     video.addEventListener(
       "error",
       () => {
-
         console.error(
           "VIDEO ERROR:",
           video.error
         );
-
       }
     );
 
@@ -668,6 +700,262 @@
     // =====================================================
     // DISCORD BİLGİLERİNİ AL
     // =====================================================
+
+    async function exchangeCodeForToken(code) {
+
+      const tokenResponse =
+        await fetch(
+          "/api/token",
+          {
+            method: "POST",
+
+            headers: {
+              "Content-Type":
+                "application/json"
+            },
+
+            body:
+              JSON.stringify({
+                code: code
+              }),
+
+            cache:
+              "no-store"
+          }
+        );
+
+
+      const tokenText =
+        await tokenResponse.text();
+
+
+      let tokenData;
+
+
+      try {
+
+        tokenData =
+          JSON.parse(tokenText);
+
+      } catch {
+
+        throw new Error(
+          `Token servisi geçersiz cevap verdi: ${tokenText.slice(0, 300)}`
+        );
+
+      }
+
+
+      if (!tokenResponse.ok) {
+
+        throw new Error(
+          tokenData.error ||
+          `Token servisi hatası: ${tokenResponse.status}`
+        );
+
+      }
+
+
+      if (!tokenData.access_token) {
+
+        throw new Error(
+          "Discord access token alınamadı."
+        );
+
+      }
+
+
+      return tokenData.access_token;
+    }
+
+
+    async function getAuthenticatedUser() {
+
+      // Önce daha önce saklanan token varsa onu dene.
+      const cachedToken =
+        localStorage.getItem(
+          DISCORD_TOKEN_STORAGE_KEY
+        );
+
+
+      if (cachedToken) {
+
+        try {
+
+          const cachedAuth =
+            await discordSdk.commands.authenticate({
+              access_token:
+                cachedToken
+            });
+
+
+          if (
+            cachedAuth &&
+            cachedAuth.user &&
+            cachedAuth.user.id
+          ) {
+
+            console.log(
+              "Discord oturumu önbellekten doğrulandı."
+            );
+
+            return cachedAuth.user;
+
+          }
+
+        } catch (error) {
+
+          console.warn(
+            "Kayıtlı Discord tokenı geçersiz, yeniden yetkilendirilecek.",
+            error
+          );
+
+          localStorage.removeItem(
+            DISCORD_TOKEN_STORAGE_KEY
+          );
+
+        }
+
+      }
+
+
+      // Geçerli kayıtlı token yoksa bir kere OAuth yetkisi iste.
+      const { code } =
+        await discordSdk.commands.authorize({
+
+          client_id:
+            DISCORD_CLIENT_ID,
+
+          response_type:
+            "code",
+
+          state:
+            "",
+
+          prompt:
+            "none",
+
+          scope: [
+            "identify"
+          ]
+
+        });
+
+
+      const accessToken =
+        await exchangeCodeForToken(
+          code
+        );
+
+
+      const auth =
+        await discordSdk.commands.authenticate({
+          access_token:
+            accessToken
+        });
+
+
+      if (
+        !auth ||
+        !auth.user ||
+        !auth.user.id
+      ) {
+
+        throw new Error(
+          "Discord kullanıcı bilgisi alınamadı."
+        );
+
+      }
+
+
+      localStorage.setItem(
+        DISCORD_TOKEN_STORAGE_KEY,
+        accessToken
+      );
+
+
+      return auth.user;
+    }
+
+
+    async function getSelectedChannel() {
+
+      if (
+        !currentUserId ||
+        !currentGuildId ||
+        !currentVoiceChannelId
+      ) {
+
+        throw new Error(
+          "Discord kullanıcı/sunucu/ses kanalı bilgisi eksik."
+        );
+
+      }
+
+
+      const apiUrl =
+        `/api/selection` +
+        `?user_id=${encodeURIComponent(currentUserId)}` +
+        `&guild_id=${encodeURIComponent(currentGuildId)}` +
+        `&voice_channel_id=${encodeURIComponent(currentVoiceChannelId)}`;
+
+
+      const response =
+        await fetch(
+          apiUrl,
+          {
+            method: "GET",
+            cache: "no-store"
+          }
+        );
+
+
+      const responseText =
+        await response.text();
+
+
+      let data;
+
+
+      try {
+
+        data =
+          JSON.parse(responseText);
+
+      } catch {
+
+        throw new Error(
+          `Worker geçersiz cevap verdi: ${responseText.slice(0, 300)}`
+        );
+
+      }
+
+
+      if (!response.ok) {
+
+        throw new Error(
+          data.error ||
+          `Worker hatası: ${response.status}`
+        );
+
+      }
+
+
+      if (!data.ok) {
+
+        throw new Error(
+          data.error ||
+          "Kanal seçimi alınamadı."
+        );
+
+      }
+
+
+      return data.channel;
+    }
+
+
+
 
     async function start() {
 
@@ -677,32 +965,31 @@
           "Discord bağlantısı kuruluyor...";
 
 
-        // Discord Activity SDK hazır olsun.
         await discordSdk.ready();
 
 
-        const guildId =
+        currentGuildId =
           discordSdk.guildId;
 
 
-        const voiceChannelId =
+        currentVoiceChannelId =
           discordSdk.channelId;
 
 
         console.log(
           "Guild ID:",
-          guildId
+          currentGuildId
         );
 
         console.log(
           "Voice Channel ID:",
-          voiceChannelId
+          currentVoiceChannelId
         );
 
 
         if (
-          !guildId ||
-          !voiceChannelId
+          !currentGuildId ||
+          !currentVoiceChannelId
         ) {
 
           showError(
@@ -714,216 +1001,49 @@
         }
 
 
-        // =====================================================
-        // DISCORD KULLANICISINI DOĞRULA
-        // =====================================================
-
         loadingText.textContent =
           "Discord hesabın doğrulanıyor...";
 
 
-        const { code } =
-          await discordSdk.commands.authorize({
-
-            client_id:
-              DISCORD_CLIENT_ID,
-
-            response_type:
-              "code",
-
-            state:
-              "",
-
-            prompt:
-              "none",
-
-            scope: [
-              "identify"
-            ]
-
-          });
+        const user =
+          await getAuthenticatedUser();
 
 
-        // Worker bu code'u Discord access_token'a çevirecek.
-        const tokenResponse =
-          await fetch(
-            "/api/token",
-            {
-              method: "POST",
-
-              headers: {
-                "Content-Type":
-                  "application/json"
-              },
-
-              body:
-                JSON.stringify({
-                  code: code
-                }),
-
-              cache:
-                "no-store"
-            }
-          );
-
-
-        const tokenText =
-          await tokenResponse.text();
-
-
-        let tokenData;
-
-
-        try {
-
-          tokenData =
-            JSON.parse(tokenText);
-
-        } catch {
-
-          throw new Error(
-            `Token servisi geçersiz cevap verdi: ${tokenText.slice(0, 300)}`
-          );
-
-        }
-
-
-        if (!tokenResponse.ok) {
-
-          throw new Error(
-            tokenData.error ||
-            `Token servisi hatası: ${tokenResponse.status}`
-          );
-
-        }
-
-
-        if (!tokenData.access_token) {
-
-          throw new Error(
-            "Discord access token alınamadı."
-          );
-
-        }
-
-
-        const auth =
-          await discordSdk.commands.authenticate({
-            access_token:
-              tokenData.access_token
-          });
-
-
-        if (
-          !auth ||
-          !auth.user ||
-          !auth.user.id
-        ) {
-
-          throw new Error(
-            "Discord kullanıcı bilgisi alınamadı."
-          );
-
-        }
-
-
-        const userId =
-          auth.user.id;
+        currentUserId =
+          user.id;
 
 
         console.log(
           "Discord User ID:",
-          userId
+          currentUserId
         );
 
-
-        // =====================================================
-        // KULLANICIYA AİT KANAL SEÇİMİNİ AL
-        // =====================================================
 
         loadingText.textContent =
           "Seçilen kanal bulunuyor...";
 
 
-        const apiUrl =
-          `/api/selection` +
-          `?user_id=${encodeURIComponent(userId)}` +
-          `&guild_id=${encodeURIComponent(guildId)}` +
-          `&voice_channel_id=${encodeURIComponent(voiceChannelId)}`;
-
-
-        console.log(
-          "Selection API:",
-          apiUrl
-        );
-
-
-        const response =
-          await fetch(
-            apiUrl,
-            {
-              method: "GET",
-              cache: "no-store"
-            }
-          );
-
-
-        const responseText =
-          await response.text();
-
-
-        let data;
-
-
-        try {
-
-          data =
-            JSON.parse(responseText);
-
-        } catch {
-
-          throw new Error(
-            `Worker geçersiz cevap verdi: ${responseText.slice(0, 300)}`
-          );
-
-        }
-
-
-        if (!response.ok) {
-
-          throw new Error(
-            data.error ||
-            `Worker hatası: ${response.status}`
-          );
-
-        }
-
-
-        if (!data.ok) {
-
-          throw new Error(
-            data.error ||
-            "Kanal seçimi alınamadı."
-          );
-
-        }
+        const selectedChannel =
+          await getSelectedChannel();
 
 
         console.log(
           "Seçilen kanal:",
-          data.channel
+          selectedChannel
         );
 
 
         playChannel(
-          data.channel
+          selectedChannel
         );
+
 
       } catch (error) {
 
         console.error(
           error
         );
+
 
         showError(
           error.message ||
