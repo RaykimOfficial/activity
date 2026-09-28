@@ -271,6 +271,11 @@
 
     let currentPlayer = null;
 
+    // BEIN / MPEG-TS canlı yayın gecikme kontrolü
+    let liveDelayTimer = null;
+    const MAX_LIVE_DELAY_SECONDS = 10;
+    const LIVE_EDGE_SAFETY_SECONDS = 0.5;
+
     // Yayın başladıktan sonra kısa takılmalarda loading ekranı
     // anında görünmesin. 2 saniye sürerse göster.
     let loadingDelayTimer = null;
@@ -357,6 +362,11 @@
 
       clearLoadingDelay();
       hasStartedPlayback = false;
+
+      if (liveDelayTimer !== null) {
+        clearInterval(liveDelayTimer);
+        liveDelayTimer = null;
+      }
 
       if (!currentPlayer) {
         return;
@@ -513,12 +523,13 @@
           enableWorker: false,
           enableWorkerForMSE: false,
 
-          enableStashBuffer: false,
-          stashInitialSize: 128,
+          // Küçük internet dalgalanmalarında biraz tampon bırak.
+          enableStashBuffer: true,
+          stashInitialSize: 512 * 1024,
 
-          liveBufferLatencyChasing: true,
-          liveBufferLatencyMaxLatency: 3,
-          liveBufferLatencyMinRemain: 0.5
+          // Oynatıcı kendi kendine sürekli canlı ucu kovalamayacak.
+          // 10 saniye sınırını aşağıdaki özel kontrol yönetiyor.
+          liveBufferLatencyChasing: false
         }
 
       );
@@ -533,6 +544,55 @@
 
 
       player.load();
+
+
+      // BEIN yayınlarında 10 saniyeye kadar gecikmeye izin ver.
+      // 10 saniyeyi aşarsa tekrar canlı yayın ucuna yaklaş.
+      liveDelayTimer = setInterval(() => {
+
+        if (
+          currentPlayer !== player ||
+          video.paused ||
+          video.buffered.length === 0
+        ) {
+          return;
+        }
+
+        const lastRange =
+          video.buffered.length - 1;
+
+        const liveEdge =
+          video.buffered.end(lastRange);
+
+        const bufferedStart =
+          video.buffered.start(lastRange);
+
+        const delay =
+          liveEdge - video.currentTime;
+
+        if (delay > MAX_LIVE_DELAY_SECONDS) {
+
+          const targetTime =
+            Math.max(
+              bufferedStart,
+              liveEdge - LIVE_EDGE_SAFETY_SECONDS
+            );
+
+          console.log(
+            `BEIN yayını ${delay.toFixed(1)} sn geride. Canlıya dönülüyor.`
+          );
+
+          try {
+            video.currentTime = targetTime;
+          } catch (error) {
+            console.warn(
+              "Canlı yayın ucuna geçilemedi:",
+              error
+            );
+          }
+        }
+
+      }, 1000);
 
 
       // Son çare: akış veri üretmeye başladıysa birkaç kez kontrol edip
