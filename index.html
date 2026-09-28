@@ -162,22 +162,6 @@
       line-height: 1.6;
       word-break: break-word;
     }
-
-    #fullscreenDebug {
-      position: absolute;
-      top: 12px;
-      left: 12px;
-      z-index: 20;
-      display: none;
-      padding: 8px 10px;
-      border-radius: 8px;
-      background: rgba(0, 0, 0, 0.72);
-      color: #ffffff;
-      font-size: 12px;
-      line-height: 1.45;
-      white-space: pre-line;
-      pointer-events: none;
-    }
   </style>
 </head>
 
@@ -220,8 +204,6 @@
         </div>
       </div>
 
-      <div id="fullscreenDebug"></div>
-
     </div>
 
   </div>
@@ -246,35 +228,6 @@
     const errorMessage = document.getElementById("errorMessage");
 
     const channelName = document.getElementById("channelName");
-
-    const fullscreenDebug =
-      document.getElementById("fullscreenDebug");
-
-    let fullscreenDebugShown = false;
-
-
-    function showFullscreenDebug() {
-
-      if (fullscreenDebugShown) {
-        return;
-      }
-
-      fullscreenDebugShown = true;
-
-      fullscreenDebug.textContent =
-        `Fullscreen API: ${document.fullscreenEnabled ? "AKTİF" : "KAPALI"}\n` +
-        `PiP: ${document.pictureInPictureEnabled ? "AKTİF" : "KAPALI"}`;
-
-      fullscreenDebug.style.display = "block";
-
-      setTimeout(
-        () => {
-          fullscreenDebug.style.display = "none";
-        },
-        7000
-      );
-    }
-
 
 
     // =====================================================
@@ -730,7 +683,6 @@
     function markPlaybackStarted() {
       hasStartedPlayback = true;
       hideLoading();
-      showFullscreenDebug();
     }
 
 
