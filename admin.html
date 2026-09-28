@@ -23,33 +23,15 @@
     html,
     body {
       margin: 0;
-      padding: 0;
-
       min-height: 100%;
-
       background: #080a0d;
-      color: #ffffff;
-
-      font-family:
-        Inter,
-        Arial,
-        Helvetica,
-        sans-serif;
+      color: white;
+      font-family: Arial, Helvetica, sans-serif;
     }
 
     body {
       min-height: 100vh;
     }
-
-    #app {
-      width: 100%;
-      min-height: 100vh;
-    }
-
-
-    /* =====================================================
-       HEADER
-    ===================================================== */
 
     .topbar {
       height: 64px;
@@ -61,22 +43,19 @@
       padding: 0 28px;
 
       background: #0d1117;
-
       border-bottom: 1px solid #20252c;
     }
 
     .logo {
       font-size: 19px;
       font-weight: 800;
-
-      letter-spacing: 0.4px;
     }
 
     .logo span {
       color: #3cff84;
     }
 
-    .admin-badge {
+    .badge {
       padding: 6px 10px;
 
       border: 1px solid #2c333d;
@@ -90,17 +69,65 @@
       font-weight: 700;
     }
 
-
-    /* =====================================================
-       ANA ALAN
-    ===================================================== */
-
     .container {
-      width: min(1100px, calc(100% - 40px));
+      width: min(
+        1100px,
+        calc(100% - 40px)
+      );
 
       margin: 0 auto;
 
       padding: 36px 0 60px;
+    }
+
+    .login-box {
+      width: min(
+        460px,
+        calc(100% - 40px)
+      );
+
+      margin: 100px auto;
+
+      padding: 28px;
+
+      border: 1px solid #252b33;
+      border-radius: 14px;
+
+      background: #10151b;
+
+      text-align: center;
+    }
+
+    .login-box h1 {
+      margin-top: 0;
+    }
+
+    .login-box p {
+      color: #8f99a7;
+      line-height: 1.6;
+    }
+
+    button {
+      border: 0;
+      border-radius: 9px;
+
+      padding: 11px 16px;
+
+      cursor: pointer;
+
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .discord-button {
+      margin-top: 12px;
+
+      background: #5865f2;
+      color: white;
+    }
+
+    #panel {
+      display: none;
     }
 
     .page-title {
@@ -117,35 +144,23 @@
       margin: 0;
 
       color: #8f99a7;
-
-      line-height: 1.6;
     }
-
-
-    /* =====================================================
-       GRID
-    ===================================================== */
 
     .grid {
       display: grid;
 
       grid-template-columns:
         minmax(0, 1fr)
-        minmax(0, 1.25fr);
+        minmax(0, 1.2fr);
 
       gap: 22px;
     }
 
-    @media (max-width: 820px) {
+    @media (max-width: 800px) {
       .grid {
         grid-template-columns: 1fr;
       }
     }
-
-
-    /* =====================================================
-       KART
-    ===================================================== */
 
     .card {
       border: 1px solid #252b33;
@@ -174,17 +189,8 @@
       padding: 20px;
     }
 
-
-    /* =====================================================
-       FORM
-    ===================================================== */
-
     .field {
       margin-bottom: 18px;
-    }
-
-    .field:last-child {
-      margin-bottom: 0;
     }
 
     label {
@@ -210,80 +216,17 @@
       padding: 12px 13px;
 
       background: #0a0e13;
-
-      color: #ffffff;
-
-      font-size: 14px;
-
-      transition:
-        border-color 0.15s ease,
-        background 0.15s ease;
+      color: white;
     }
 
     input:focus,
     textarea:focus {
       border-color: #3cff84;
-
-      background: #0d1218;
     }
 
     textarea {
       min-height: 95px;
-
       resize: vertical;
-    }
-
-    .hint {
-      margin-top: 6px;
-
-      color: #6f7885;
-
-      font-size: 12px;
-
-      line-height: 1.5;
-    }
-
-
-    /* =====================================================
-       BUTON
-    ===================================================== */
-
-    .button-row {
-      display: flex;
-
-      gap: 10px;
-
-      margin-top: 20px;
-    }
-
-    button {
-      border: 0;
-      border-radius: 9px;
-
-      padding: 11px 16px;
-
-      cursor: pointer;
-
-      font-size: 13px;
-      font-weight: 800;
-
-      transition:
-        transform 0.1s ease,
-        opacity 0.1s ease;
-    }
-
-    button:hover {
-      opacity: 0.9;
-    }
-
-    button:active {
-      transform: scale(0.98);
-    }
-
-    button:disabled {
-      cursor: not-allowed;
-
-      opacity: 0.45;
     }
 
     .ban-button {
@@ -291,24 +234,18 @@
       color: white;
     }
 
-    .refresh-button {
-      background: #232a33;
-      color: #d9e0e8;
-    }
-
-    .unban-button {
-      padding: 7px 10px;
-
+    .refresh-button,
+    .unban-button,
+    .logout-button {
       background: #252c35;
-      color: #ffffff;
-
-      font-size: 12px;
+      color: white;
     }
 
-
-    /* =====================================================
-       BAN LİSTESİ
-    ===================================================== */
+    .top-actions {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
 
     .ban-list {
       display: flex;
@@ -322,7 +259,7 @@
       align-items: center;
       justify-content: space-between;
 
-      gap: 16px;
+      gap: 14px;
 
       padding: 13px 14px;
 
@@ -332,16 +269,9 @@
       background: #0c1117;
     }
 
-    .ban-info {
-      min-width: 0;
-    }
-
     .ban-id {
       margin-bottom: 4px;
 
-      color: #ffffff;
-
-      font-size: 14px;
       font-weight: 800;
 
       word-break: break-all;
@@ -351,8 +281,6 @@
       color: #8e98a5;
 
       font-size: 12px;
-
-      word-break: break-word;
     }
 
     .ban-date {
@@ -364,32 +292,23 @@
     }
 
     .empty {
-      padding: 35px 10px;
+      padding: 30px 10px;
 
       color: #747e8c;
 
       text-align: center;
-
-      font-size: 13px;
     }
-
-
-    /* =====================================================
-       MESAJ
-    ===================================================== */
 
     #message {
       display: none;
 
-      margin-top: 18px;
+      margin-top: 16px;
 
       padding: 12px 14px;
 
       border-radius: 9px;
 
       font-size: 13px;
-
-      line-height: 1.5;
     }
 
     #message.success {
@@ -411,264 +330,330 @@
 
       color: #ff8989;
     }
-
-
-    /* =====================================================
-       YETKİ EKRANI
-    ===================================================== */
-
-    #unauthorized {
-      display: none;
-
-      width: min(500px, calc(100% - 40px));
-
-      margin: 100px auto 0;
-
-      padding: 30px;
-
-      border: 1px solid #39272a;
-      border-radius: 14px;
-
-      background: #151012;
-
-      text-align: center;
-    }
-
-    #unauthorized h2 {
-      margin-top: 0;
-
-      color: #ff6666;
-    }
-
-    #panel {
-      display: none;
-    }
   </style>
 </head>
 
 <body>
 
-  <div id="app">
+  <header class="topbar">
 
-    <header class="topbar">
+    <div class="logo">
+      FIRIKIK <span>TV</span>
+    </div>
 
-      <div class="logo">
-        FIRIKIK <span>TV</span>
+    <div class="top-actions">
+
+      <div
+        id="adminName"
+        class="badge"
+      >
+        ADMIN
       </div>
 
-      <div class="admin-badge">
-        ADMIN PANEL
-      </div>
+      <button
+        id="logoutButton"
+        class="logout-button"
+        style="display:none;"
+      >
+        Çıkış
+      </button>
 
-    </header>
+    </div>
+
+  </header>
 
 
-    <div id="unauthorized">
+  <!-- =====================================================
+       GİRİŞ
+  ====================================================== -->
 
-      <h2>Yetkisiz erişim</h2>
+  <div
+    id="loginBox"
+    class="login-box"
+  >
+
+    <h1>
+      FIRIKIK TV Admin
+    </h1>
+
+    <p>
+      Kullanıcı banlama paneline erişmek için
+      Discord hesabınla giriş yap.
+    </p>
+
+    <button
+      id="loginButton"
+      class="discord-button"
+    >
+      Discord ile Giriş Yap
+    </button>
+
+  </div>
+
+
+  <!-- =====================================================
+       PANEL
+  ====================================================== -->
+
+  <main
+    id="panel"
+    class="container"
+  >
+
+    <div class="page-title">
+
+      <h1>
+        Kullanıcı Banlama
+      </h1>
 
       <p>
-        Bu sayfayı kullanmak için admin yetkisine
-        sahip olman gerekiyor.
+        FIRIKIK TV erişimini kullanıcı bazlı yönet.
       </p>
 
     </div>
 
 
-    <main
-      id="panel"
-      class="container"
-    >
-
-      <div class="page-title">
-
-        <h1>
-          Kullanıcı Yönetimi
-        </h1>
-
-        <p>
-          FIRIKIK TV erişimini kullanıcı bazlı olarak
-          engelle veya yasağı kaldır.
-        </p>
-
-      </div>
+    <div class="grid">
 
 
-      <div class="grid">
+      <!-- BAN FORMU -->
+
+      <section class="card">
+
+        <div class="card-header">
+
+          <h2>
+            🚫 Kullanıcı Banla
+          </h2>
+
+        </div>
 
 
-        <!-- =================================================
-             KULLANICI BANLA
-        ================================================== -->
+        <div class="card-body">
 
-        <section class="card">
+          <div class="field">
 
-          <div class="card-header">
+            <label>
+              Discord Kullanıcı ID
+            </label>
+
+            <input
+              id="userId"
+              type="text"
+              inputmode="numeric"
+              placeholder="123456789012345678"
+            >
+
+          </div>
+
+
+          <div class="field">
+
+            <label>
+              Ban Sebebi
+            </label>
+
+            <textarea
+              id="reason"
+              placeholder="Ban sebebi..."
+            ></textarea>
+
+          </div>
+
+
+          <button
+            id="banButton"
+            class="ban-button"
+          >
+            Kullanıcıyı Banla
+          </button>
+
+
+          <div id="message"></div>
+
+        </div>
+
+      </section>
+
+
+      <!-- BAN LİSTESİ -->
+
+      <section class="card">
+
+        <div class="card-header">
+
+          <div
+            style="
+              display:flex;
+              align-items:center;
+              justify-content:space-between;
+              gap:12px;
+            "
+          >
 
             <h2>
-              🚫 Kullanıcı Banla
+              🚷 Yasaklı Kullanıcılar
             </h2>
 
-          </div>
-
-
-          <div class="card-body">
-
-            <div class="field">
-
-              <label for="userId">
-                Discord Kullanıcı ID
-              </label>
-
-              <input
-                id="userId"
-                type="text"
-                inputmode="numeric"
-                autocomplete="off"
-                placeholder="Örn: 123456789012345678"
-              >
-
-              <div class="hint">
-                Kullanıcının Discord kullanıcı ID'sini gir.
-              </div>
-
-            </div>
-
-
-            <div class="field">
-
-              <label for="reason">
-                Ban Sebebi
-              </label>
-
-              <textarea
-                id="reason"
-                placeholder="Ban sebebini yaz..."
-              ></textarea>
-
-            </div>
-
-
-            <div class="button-row">
-
-              <button
-                id="banButton"
-                class="ban-button"
-                type="button"
-              >
-                Kullanıcıyı Banla
-              </button>
-
-            </div>
-
-
-            <div id="message"></div>
-
-          </div>
-
-        </section>
-
-
-        <!-- =================================================
-             YASAKLI KULLANICILAR
-        ================================================== -->
-
-        <section class="card">
-
-          <div class="card-header">
-
-            <div
-              style="
-                display:flex;
-                justify-content:space-between;
-                align-items:center;
-                gap:12px;
-              "
+            <button
+              id="refreshButton"
+              class="refresh-button"
             >
+              Yenile
+            </button>
 
-              <h2>
-                🚷 Yasaklı Kullanıcılar
-              </h2>
+          </div>
 
-              <button
-                id="refreshButton"
-                class="refresh-button"
-                type="button"
-              >
-                Yenile
-              </button>
+        </div>
 
+
+        <div class="card-body">
+
+          <div
+            id="banList"
+            class="ban-list"
+          >
+
+            <div class="empty">
+              Yükleniyor...
             </div>
 
           </div>
 
+        </div>
 
-          <div class="card-body">
-
-            <div
-              id="banList"
-              class="ban-list"
-            >
-
-              <div class="empty">
-                Yükleniyor...
-              </div>
-
-            </div>
-
-          </div>
-
-        </section>
+      </section>
 
 
-      </div>
+    </div>
 
-    </main>
-
-  </div>
+  </main>
 
 
   <script>
+
+    // =====================================================
+    // AYARLAR
+    // =====================================================
+
+    const CLIENT_ID =
+      "1550162030437339256";
+
+
+    const REDIRECT_URI =
+      "https://raykimofficial.github.io/activity/admin.html";
+
+
+    const API_BASE =
+      "https://activity.raykimofficial.workers.dev";
+
+
+    const TOKEN_KEY =
+      "firikik_admin_access_token";
+
+
+    // =====================================================
+    // ELEMENTLER
+    // =====================================================
+
+    const loginBox =
+      document.getElementById(
+        "loginBox"
+      );
+
 
     const panel =
       document.getElementById(
         "panel"
       );
 
-    const unauthorized =
+
+    const loginButton =
       document.getElementById(
-        "unauthorized"
+        "loginButton"
       );
+
+
+    const logoutButton =
+      document.getElementById(
+        "logoutButton"
+      );
+
+
+    const adminName =
+      document.getElementById(
+        "adminName"
+      );
+
 
     const userIdInput =
       document.getElementById(
         "userId"
       );
 
+
     const reasonInput =
       document.getElementById(
         "reason"
       );
+
 
     const banButton =
       document.getElementById(
         "banButton"
       );
 
+
     const refreshButton =
       document.getElementById(
         "refreshButton"
       );
+
 
     const banList =
       document.getElementById(
         "banList"
       );
 
+
     const message =
       document.getElementById(
         "message"
       );
+
+
+    // =====================================================
+    // TOKEN
+    // =====================================================
+
+    function getToken() {
+
+      return localStorage.getItem(
+        TOKEN_KEY
+      );
+
+    }
+
+
+    function setToken(
+      token
+    ) {
+
+      localStorage.setItem(
+        TOKEN_KEY,
+        token
+      );
+
+    }
+
+
+    function clearToken() {
+
+      localStorage.removeItem(
+        TOKEN_KEY
+      );
+
+    }
 
 
     // =====================================================
@@ -705,25 +690,37 @@
     // =====================================================
 
     async function apiFetch(
-      url,
+      path,
       options = {}
     ) {
 
+      const token =
+        getToken();
+
+
+      const headers = {
+        "Content-Type":
+          "application/json",
+
+        ...(options.headers || {})
+      };
+
+
+      if (token) {
+
+        headers.Authorization =
+          `Bearer ${token}`;
+
+      }
+
+
       const response =
         await fetch(
-          url,
+          API_BASE + path,
           {
             ...options,
 
-            credentials:
-              "include",
-
-            headers: {
-              "Content-Type":
-                "application/json",
-
-              ...(options.headers || {})
-            },
+            headers,
 
             cache:
               "no-store"
@@ -774,16 +771,196 @@
 
 
     // =====================================================
-    // ADMİN KONTROLÜ
+    // DISCORD GİRİŞ
+    // =====================================================
+
+    function loginWithDiscord() {
+
+      const state =
+        crypto.randomUUID();
+
+
+      sessionStorage.setItem(
+        "firikik_admin_oauth_state",
+        state
+      );
+
+
+      const params =
+        new URLSearchParams();
+
+
+      params.set(
+        "client_id",
+        CLIENT_ID
+      );
+
+
+      params.set(
+        "response_type",
+        "code"
+      );
+
+
+      params.set(
+        "redirect_uri",
+        REDIRECT_URI
+      );
+
+
+      params.set(
+        "scope",
+        "identify"
+      );
+
+
+      params.set(
+        "state",
+        state
+      );
+
+
+      window.location.href =
+        "https://discord.com/oauth2/authorize?" +
+        params.toString();
+
+    }
+
+
+    // =====================================================
+    // CODE -> TOKEN
+    // =====================================================
+
+    async function handleOAuthCallback() {
+
+      const params =
+        new URLSearchParams(
+          window.location.search
+        );
+
+
+      const code =
+        params.get(
+          "code"
+        );
+
+
+      if (!code) {
+        return;
+      }
+
+
+      const returnedState =
+        params.get(
+          "state"
+        );
+
+
+      const expectedState =
+        sessionStorage.getItem(
+          "firikik_admin_oauth_state"
+        );
+
+
+      if (
+        !returnedState ||
+        !expectedState ||
+        returnedState !== expectedState
+      ) {
+
+        throw new Error(
+          "OAuth state doğrulaması başarısız."
+        );
+
+      }
+
+
+      const response =
+        await fetch(
+          API_BASE +
+          "/admin/token",
+          {
+            method:
+              "POST",
+
+            headers: {
+              "Content-Type":
+                "application/json"
+            },
+
+            body:
+              JSON.stringify({
+                code
+              })
+          }
+        );
+
+
+      const data =
+        await response.json();
+
+
+      if (
+        !response.ok ||
+        !data.ok ||
+        !data.access_token
+      ) {
+
+        throw new Error(
+          data.error ||
+          "Admin girişi başarısız."
+        );
+
+      }
+
+
+      setToken(
+        data.access_token
+      );
+
+
+      sessionStorage.removeItem(
+        "firikik_admin_oauth_state"
+      );
+
+
+      window.history.replaceState(
+        {},
+        document.title,
+        REDIRECT_URI
+      );
+
+    }
+
+
+    // =====================================================
+    // ADMİN DOĞRULA
     // =====================================================
 
     async function checkAdmin() {
+
+      const token =
+        getToken();
+
+
+      if (!token) {
+
+        loginBox.style.display =
+          "block";
+
+        panel.style.display =
+          "none";
+
+        return false;
+
+      }
+
 
       try {
 
         const data =
           await apiFetch(
-            "/api/admin/me"
+            "/admin/me"
           );
 
 
@@ -799,22 +976,45 @@
         }
 
 
+        loginBox.style.display =
+          "none";
+
+
         panel.style.display =
           "block";
 
 
-        await loadBans();
+        logoutButton.style.display =
+          "inline-block";
+
+
+        adminName.textContent =
+          data.user.global_name ||
+          data.user.username ||
+          "ADMIN";
+
+
+        return true;
 
 
       } catch (error) {
 
-        console.error(
-          error
-        );
+        clearToken();
 
 
-        unauthorized.style.display =
+        loginBox.style.display =
           "block";
+
+
+        panel.style.display =
+          "none";
+
+
+        logoutButton.style.display =
+          "none";
+
+
+        throw error;
 
       }
 
@@ -822,22 +1022,24 @@
 
 
     // =====================================================
-    // BAN LİSTESİNİ AL
+    // BAN LİSTESİ
     // =====================================================
 
     async function loadBans() {
 
       banList.innerHTML =
-        `<div class="empty">
-          Yükleniyor...
-        </div>`;
+        `
+          <div class="empty">
+            Yükleniyor...
+          </div>
+        `;
 
 
       try {
 
         const data =
           await apiFetch(
-            "/api/admin/bans"
+            "/admin/bans"
           );
 
 
@@ -850,9 +1052,11 @@
         ) {
 
           banList.innerHTML =
-            `<div class="empty">
-              Yasaklı kullanıcı bulunmuyor.
-            </div>`;
+            `
+              <div class="empty">
+                Yasaklı kullanıcı yok.
+              </div>
+            `;
 
           return;
 
@@ -881,10 +1085,6 @@
             document.createElement(
               "div"
             );
-
-
-          info.className =
-            "ban-info";
 
 
           const id =
@@ -928,7 +1128,11 @@
 
           date.textContent =
             ban.banned_at
-              ? `Ban tarihi: ${ban.banned_at}`
+              ? new Date(
+                  ban.banned_at
+                ).toLocaleString(
+                  "tr-TR"
+                )
               : "";
 
 
@@ -958,7 +1162,7 @@
 
 
           button.textContent =
-            "Yasağı Kaldır";
+            "Ban Kaldır";
 
 
           button.addEventListener(
@@ -993,9 +1197,11 @@
       } catch (error) {
 
         banList.innerHTML =
-          `<div class="empty">
-            Ban listesi alınamadı.
-          </div>`;
+          `
+            <div class="empty">
+              Ban listesi alınamadı.
+            </div>
+          `;
 
 
         showMessage(
@@ -1048,7 +1254,7 @@
       try {
 
         await apiFetch(
-          "/api/admin/ban",
+          "/admin/ban",
           {
             method:
               "POST",
@@ -1066,7 +1272,7 @@
 
 
         showMessage(
-          "Kullanıcı başarıyla banlandı.",
+          "Kullanıcı banlandı.",
           "success"
         );
 
@@ -1114,7 +1320,7 @@
       try {
 
         await apiFetch(
-          "/api/admin/unban",
+          "/admin/unban",
           {
             method:
               "POST",
@@ -1129,7 +1335,7 @@
 
 
         showMessage(
-          "Kullanıcının yasağı kaldırıldı.",
+          "Kullanıcının banı kaldırıldı.",
           "success"
         );
 
@@ -1150,8 +1356,29 @@
 
 
     // =====================================================
+    // ÇIKIŞ
+    // =====================================================
+
+    function logout() {
+
+      clearToken();
+
+
+      window.location.href =
+        REDIRECT_URI;
+
+    }
+
+
+    // =====================================================
     // EVENTLER
     // =====================================================
+
+    loginButton.addEventListener(
+      "click",
+      loginWithDiscord
+    );
+
 
     banButton.addEventListener(
       "click",
@@ -1165,11 +1392,51 @@
     );
 
 
+    logoutButton.addEventListener(
+      "click",
+      logout
+    );
+
+
     // =====================================================
     // BAŞLAT
     // =====================================================
 
-    checkAdmin();
+    async function start() {
+
+      try {
+
+        await handleOAuthCallback();
+
+
+        const admin =
+          await checkAdmin();
+
+
+        if (admin) {
+
+          await loadBans();
+
+        }
+
+
+      } catch (error) {
+
+        console.error(
+          error
+        );
+
+
+        alert(
+          error.message
+        );
+
+      }
+
+    }
+
+
+    start();
 
   </script>
 
