@@ -274,7 +274,7 @@
     // BEIN / MPEG-TS canlı yayın gecikme kontrolü
     let liveDelayTimer = null;
     const MAX_LIVE_DELAY_SECONDS = 10;
-    const LIVE_EDGE_SAFETY_SECONDS = 0.5;
+    const LIVE_EDGE_SAFETY_SECONDS = 3;
 
     // Yayın başladıktan sonra kısa takılmalarda loading ekranı
     // anında görünmesin. 2 saniye sürerse göster.
@@ -523,9 +523,18 @@
           enableWorker: false,
           enableWorkerForMSE: false,
 
-          // Küçük internet dalgalanmalarında biraz tampon bırak.
+          // İnternet dalgalanmalarında bağlantıyı korumak için
+          // daha geniş bir ağ tamponu kullan.
           enableStashBuffer: true,
-          stashInitialSize: 512 * 1024,
+          stashInitialSize: 1024 * 1024,
+
+          // Canlı yayında gereksiz dur-kalk davranışını azalt.
+          lazyLoad: false,
+
+          // Uzun maçlarda MSE buffer'ının sınırsız büyümesini önle.
+          autoCleanupSourceBuffer: true,
+          autoCleanupMaxBackwardDuration: 120,
+          autoCleanupMinBackwardDuration: 60,
 
           // Oynatıcı kendi kendine sürekli canlı ucu kovalamayacak.
           // 10 saniye sınırını aşağıdaki özel kontrol yönetiyor.
@@ -547,7 +556,8 @@
 
 
       // BEIN yayınlarında 10 saniyeye kadar gecikmeye izin ver.
-      // 10 saniyeyi aşarsa tekrar canlı yayın ucuna yaklaş.
+      // 10 saniyeyi aşarsa canlı ucun tam dibine değil,
+      // 3 saniye gerisine geçerek yeniden takılma ihtimalini azalt.
       liveDelayTimer = setInterval(() => {
 
         if (
@@ -592,7 +602,7 @@
           }
         }
 
-      }, 1000);
+      }, 3000);
 
 
       // Son çare: akış veri üretmeye başladıysa birkaç kez kontrol edip
