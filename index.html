@@ -235,39 +235,42 @@
     // =====================================================
 
     const CHANNELS = {
+  trt1: {
+    name: "TRT 1",
+    type: "hls",
+    url: "/trt/master_720.m3u8"
+  },
 
-      trt1: {
-        name: "TRT 1",
-        type: "hls",
-        url: "/trt/master_720.m3u8"
-      },
+  bein1: {
+    name: "BEIN SPORTS 1 HD",
+    type: "mpegts",
+    url: "/bein/bein1"
+  },
 
-      bein1: {
-        name: "BEIN SPORTS 1 HD",
-        type: "mpegts",
-        url: "/bein/224163"
-      },
+  bein2: {
+    name: "BEIN SPORTS 2 HD",
+    type: "mpegts",
+    url: "/bein/bein2"
+  },
 
-      bein2: {
-        name: "BEIN SPORTS 2 FHD",
-        type: "mpegts",
-        url: "/bein/224170"
-      },
+  bein3: {
+    name: "BEIN SPORTS 3 HD",
+    type: "mpegts",
+    url: "/bein/bein3"
+  },
 
-      bein3: {
-        name: "BEIN SPORTS 3 HD",
-        type: "mpegts",
-        url: "/bein/224172"
-      },
+  bein4: {
+    name: "BEIN SPORTS 4 HD",
+    type: "mpegts",
+    url: "/bein/bein4"
+  },
 
-      bein4: {
-        name: "BEIN SPORTS 4 HD",
-        type: "mpegts",
-        url: "/bein/224173"
-      }
-
-    };
-
+  bein5: {
+    name: "BEIN SPORTS 5 HD",
+    type: "mpegts",
+    url: "/bein/bein5"
+  }
+};
 
     let currentPlayer = null;
 
